@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.3.xsd">
+
+	<!-- spring整合mybatis的配置文件 【重要】 -->
+	<!-- 目的：通过IOC容器把mybatis创建的XxxMapper类装配到当前组件中，就可以在spring框架中使用这些mybatis框架中的相关类。这些事最终目的 -->
+	<!-- 但是前提还是需要去连接数据库与配置SqlSessionFactoryBean类 -->
+	
+	<!-- 包括
+	    (1)连接数据库（加载外部属性文件、配置数据源）。用来连接数据库
+	    (2)配置SqlSessionFactoryBean。用来整合mybatis，创建SqlSession（mybatis框架中很重要的一个类） 
+		(3)配置MapperScannerConfigurer。用来把MyBatis使用动态代理创建的Mapper接口实现类（dao层的接口实现类）的代理对象扫描到IOC容器中，为以后装配使用 -->
+		
+	<!-- spring配置文件总结下来都是使用了bean——property标签来进行配置（除了加入外部属性文件需要用context:property-placeholder标签外） -->
+	
+	<!-- （1）连接数据库******************************************* -->
+	<!-- 加载外部属性文件 -->
+	<context:property-placeholder location="classpath:jdbc.properties" />
+
+	<!-- 配置数据源 -->
+	<bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource">
+		<property name="driverClassName" value="${jdbc.driver}" />
+		<property name="url" value="${jdbc.url}" />
+		<property name="username" value="${jdbc.username}" />
+		<property name="password" value="${jdbc.password}" />
+	</bean>
+
+	<!-- （2）配置SqlSessionFactoryBean*************************** -->
+	<bean id="sqlSessionFactoryBean" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<!-- 装配数据源 -->
+		<property name="dataSource" ref="dataSource"></property>
+
+		<!-- 指定mybatis主配置文件 -->
+		<property name="configLocation" value="classpath:mybatis-config.xml"></property>
+
+		<!-- 指定sql映射文件（mapper配置文件） -->
+		<!-- 这里mapperLocations的值抒写应该灵活一些，因为不止有一个sql映射文件（每一个库表有一个sql映射文件） 并且sql映射文件的命名规范为：实体类名 
+			+ Mapper.xml -->
+		<property name="mapperLocations" value="classpath:mybatis/mapper/*Mapper.xml"></property>
+		
+		<property name="plugins">
+			<array>
+				<!-- 配置PageHelper -->
+				<bean class="com.github.pagehelper.PageHelper">
+					<!-- properties属性相当于简化的map集合 -->
+					<property name="properties">
+						<props>
+							<!-- 配置数据库方言，指定使用的数据库种类 -->
+							<!-- 让PageHelper可以根据当前数据库生成对应的分页sql语句 -->
+							<prop key="dialect">mysql</prop>
+							
+							<!-- 配置页面的合理化修正 -->
+							<!-- 让PageHelper自动把浏览器传来的PageNum修正到0~最大页码 -->
+							<prop key="reasonable">true</prop>
+						</props>
+					</property>
+				</bean>
+			</array>
+		</property>
+	</bean>
+
+	<!-- （3）配置MapperScannerConfigurer*************************** -->
+	<bean id="mapperScannerConfigurer" class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<!-- 指定XxxMapper接口所在包 -->
+		<property name="basePackage" value="com.aolhon.crowd.mapper"></property>
+	</bean>
+
+</beans>

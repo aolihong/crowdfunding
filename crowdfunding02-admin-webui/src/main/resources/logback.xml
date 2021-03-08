@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- logback的配置文件（也可不用配置此文件、即使用默认的日志输出配置），且必须以logback.xml为文件名 -->
+
+<configuration debug="true">
+	<!-- 指定日志输出的位置 -->
+	<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+		<encoder>
+			<!-- 自定义日志输出的格式 -->
+			<pattern>[%d{HH:mm:ss.SSS}] [%-5level] [%thread] [%logger] [%msg]%n
+			</pattern>
+		</encoder>
+	</appender>
+
+	<!-- **************************全局日志********************* -->
+	
+	<!-- 设置全局日志级别。日志级别按顺序为DEBUG、INFO、WARN、ERROR -->
+	<!-- 指定任何一个日志级别都只打印当前级别及以后的级别的日志 -->
+	<root level="DEBUG">
+		<!-- 指定打印日志的appender，这里通过“STDOUT”引用了前面配置的appender -->
+		<appender-ref ref="STDOUT" />
+	</root>
+	
+	<!-- **************************局部日志********************* -->
+	
+	<!-- 根据需求 指定 局部日志级别 -->
+	<logger name="com.atguigu.crowd.mapper" level="DEBUG"/>
+</configuration>

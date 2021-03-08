@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns="http://xmlns.jcp.org/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee
+                      http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd"
+	version="3.1" metadata-complete="true">
+	
+	
+	<display-name>crowdfunding02-admin-webui</display-name>
+	<!-- web.xml文件是tomcat服务器启动后读取的第一个项目文件 -->
+
+	<!-- springmvc的web.xml内容包括 -->
+	<!-- 
+		（1）配置监听器ContextLoaderListener 【用来指定spring的配置文件】
+		（2）配置过滤器CharacterEncodingFilter 
+		（3）配置调度器（控制器）DispatcherServlet 【用来指定SpringMVC的配置文件】
+		（4）配置过滤器DelegatingFilterProxy
+			
+			注意：用来指定Spring配置文件/SpringMVC配置文件都是使用ContextConfigLocation属性赋值
+			<param-name>contextConfigLocation</param-name>【都是同一个属性】
+			
+			<param-value>classpath:spring-persist-*.xml</param-value>【spring配置文件】
+			<param-value>classpath:spring-web-mvc.xml</param-value>【springmvc配置文件】
+			-->
+			
+			
+	<!-- （1）ContextLoaderListener************************************* -->
+	<!-- needed for ContextLoaderListener -->
+	<context-param>
+		<param-name>contextConfigLocation</param-name>
+		<!-- spring的配置文件 -->
+		<param-value>classpath:spring-persist-*.xml</param-value>
+	</context-param>
+
+	<!-- Bootstraps the root web application context before servlet initialization -->
+	<listener>
+		<listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+	</listener>
+	
+	<!-- （2）CharacterEncodingFilter************************************* -->
+	<!-- 配置字符集过滤器 -->
+	<filter>
+		<filter-name>characterEncodingFilter</filter-name>
+		<filter-class>org.springframework.web.filter.CharacterEncodingFilter</filter-class>
+		
+		<!-- 其实以下配置是先对CharacterEncodingFilter类的相关属性进行初始化设置 -->
+		<!-- 指定字符集 -->
+		<init-param>
+			<param-name>encoding</param-name>
+			<param-value>UTF-8</param-value>
+		</init-param>
+		<init-param>
+			<param-name>forceRequestEncoding</param-name>
+			<param-value>true</param-value>
+		</init-param>
+		<init-param>
+			<param-name>forceResponseEncoding</param-name>
+			<param-value>true</param-value>
+		</init-param>
+	</filter>
+	
+	<filter-mapping>
+		<filter-name>characterEncodingFilter</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+	
+	<!-- （3）中央调度器DispatcherServlet************************************* -->
+	<servlet>
+		<servlet-name>dispatcherServlett</servlet-name>
+		<servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+		
+		<!-- 进行初始化属性设置 -->
+		<init-param>
+			<!-- 这个属性是SpringMVC的配置文件路径 -->
+			<param-name>contextConfigLocation</param-name>
+			<param-value>classpath:spring-web-mvc.xml</param-value>
+		</init-param>
+		
+		<!-- 设置启动优先加载此servlet程序 -->
+		<load-on-startup>1</load-on-startup>
+		
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>dispatcherServlett</servlet-name>
+		<!-- 以后缀名的方式作为访问的优点 -->
+		<!-- 优点：（1）可以避免静态资源访问不到的冲突 
+				    （2）实现了伪静态效果。提高SEO优化、增加黑客入侵难度-->
+		<url-pattern>*.html</url-pattern>
+		
+		<!-- 为什么要另外再配置json扩展名呢？ -->
+		<!-- 如果一个Ajax请求扩展名是html，但是实际服务器给浏览器返回的是json数据，二者就不匹配了，会出现406错误。 -->
+		<!-- 为了让Ajax请求能够顺利拿到JSON格式的响应数据，我们另外配置json扩展名 -->
+		<url-pattern>*.json</url-pattern>
+	</servlet-mapping>
+	
+			<!-- （4）配置监听器DelegatingFilterProxy************************************* -->
+	<filter>
+		<filter-name>springSecurityFilterChain</filter-name>
+		<filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
+	</filter>
+	<filter-mapping>
+		<filter-name>springSecurityFilterChain</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+	
+</web-app>
